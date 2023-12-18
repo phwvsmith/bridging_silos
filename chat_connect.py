@@ -116,8 +116,12 @@ to new_combinations, each item to repeat_check and removes each item from
 emails_list and repeats the process from randomly selecting strings
 until emails_list is empty
 
-Second prompt due to being stuck in while loop 
+Second prompt due to being stuck in while loop: 
 At the moment create_new_combinations gets stuck in a while, can you suggest a fix
+
+Third prompt to add formatted excel output:
+Update the function so that it outputs new_combinations as a excel file
+with the file name as batch and time and date
 """
 
 def create_new_combinations(emails_list: List[str], history_list: List[Set[str]]) -> List[Set[str]]:
