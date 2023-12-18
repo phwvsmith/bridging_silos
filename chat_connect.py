@@ -1,5 +1,10 @@
+import random
+from typing import List, Set
 import pandas as pd
 import os
+from openpyxl import load_workbook
+from openpyxl.styles import Font
+from datetime import datetime
 
 def read_csv_files() -> (pd.DataFrame, pd.DataFrame):
     """
@@ -68,7 +73,7 @@ def dataframes_to_lists(emails_df: pd.DataFrame, history_df: pd.DataFrame) -> (l
     return emails_list, history_list
 
 
-def create_new_combinations(emails_list: list, history_list: list) -> list:
+def all_combinations(emails_list: list, history_list: list) -> list:
     """
     Creates all possible new combinations from the emails list as sets, 
     ensuring that the set does not already exist in the history list.
@@ -81,7 +86,7 @@ def create_new_combinations(emails_list: list, history_list: list) -> list:
         list: A list of all new combination sets that are not present in the history list.
     """
     new_combinations = []
-
+    print("fndjksnfjds")
     for i in range(len(emails_list)):
         for j in range(i + 1, len(emails_list)):
             email1, email2 = emails_list[i], emails_list[j]
@@ -97,6 +102,94 @@ def create_new_combinations(emails_list: list, history_list: list) -> list:
 
     return new_combinations
 
+"""
+chatgpt promt for next function:
+Could you please create a function called create_new_combinations, that
+takes two lists: emails_list which is a list of strings and history_list
+which is a list of sets with two strings in each set. It reacts an empty
+list called repeat_check. It creates another empty list called new_combinations.
+It randomly selects two different string from emails_list and puts them
+within a new temporary set set. It then checks if that set already exist
+within history_list and if its not in history_list then it check that each
+item within the set is not in repeat_check, and if not it adds the set
+to new_combinations, each item to repeat_check and removes each item from
+emails_list and repeats the process from randomly selecting strings
+until emails_list is empty
+
+Second prompt due to being stuck in while loop 
+At the moment create_new_combinations gets stuck in a while, can you suggest a fix
+"""
+
+def create_new_combinations(emails_list: List[str], history_list: List[Set[str]]) -> List[Set[str]]:
+    """
+    Generate new combinations of email pairs from a given list of emails.
+
+    This function takes a list of email addresses and a history list containing sets of email pairs.
+    It creates unique pairs of emails that do not exist in the history list, and ensures that each
+    email is only used once in the new combinations. The process continues until there are no more
+    emails left to pair or it's impossible to form more pairs.
+
+    Parameters:
+    emails_list (List[str]): A list of email addresses as strings.
+    history_list (List[Set[str]]): A list of sets, with each set containing two email addresses.
+
+    Returns:
+    List[Set[str]]: A list of sets, with each set containing a unique pair of email addresses.
+
+    Note:
+    - The function uses random selection, so the output may vary each time it's called.
+    - If the number of emails is odd, one email might remain unused.
+    """
+    repeat_check = []
+    new_combinations = []
+
+    # Track attempts to avoid infinite loop
+    attempts = 0
+    max_attempts = len(emails_list) * 2  # Arbitrary number, adjust as needed
+
+    while emails_list and attempts < max_attempts:
+        if len(emails_list) < 2:
+            break
+
+        email1, email2 = random.sample(emails_list, 2)
+        new_set = {email1, email2}
+
+        if new_set not in history_list and email1 not in repeat_check and email2 not in repeat_check:
+            new_combinations.append(new_set)
+            repeat_check.extend(new_set)
+            emails_list.remove(email1)
+            emails_list.remove(email2)
+            attempts = 0  # Reset attempts after a successful pairing
+        else:
+            attempts += 1  # Increment attempts if pairing wasn't successful
+
+
+    # Convert the list of sets to a DataFrame
+    df = pd.DataFrame(new_combinations, columns=['Email 1', 'Email 2'])
+
+    # Generate a filename with the current date and time
+    filename = f"batch_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+
+    # Save to Excel
+    with pd.ExcelWriter(filename, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False)
+
+    # Open the Excel file with openpyxl to apply styles
+    workbook = load_workbook(filename)
+    sheet = workbook.active
+
+    # Apply red font to 'Email 1' column (assuming it's the first column)
+    for row in range(2, sheet.max_row + 1):  # start from 2 to skip the header
+        cell = sheet.cell(row, 1)
+        cell.font = Font(color="FF0000")  # Red color
+
+    # Save the changes
+    workbook.save(filename)
+
+    print(f"Saved to {filename}")
+
+
+    return new_combinations
 
 def update_history_and_save_csv(new_combinations: list, history_list: list):
     """
@@ -133,6 +226,7 @@ emails_df, history_df = rename_columns(emails_df, history_df)  # Optional if col
 emails_list, history_list = dataframes_to_lists(emails_df, history_df)
 
 new_combinations = create_new_combinations(emails_list, history_list)
+
 print(new_combinations)
 
 print(emails_list)  # Prints the list of emails
