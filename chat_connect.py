@@ -18,13 +18,12 @@ def read_csv_files() -> (pd.DataFrame, pd.DataFrame):
     files = [f for f in os.listdir('.') if os.path.isfile(f) and f.endswith('.csv')]
     email_file = next((f for f in files if 'emails' in f), None)
     history_file = next((f for f in files if 'history' in f), None)
-    print("fnmdjklsn")
     if not email_file or not history_file:
         raise FileNotFoundError("Required files not found in the current directory.")
 
     emails_df = pd.read_csv(email_file)
     history_df = pd.read_csv(history_file)
-
+    print("fnmdjklsn")
     return emails_df, history_df
 
 
@@ -149,11 +148,11 @@ def create_new_combinations(emails_list: List[str], history_list: List[Set[str]]
 
     # Track attempts to avoid infinite loop
     attempts = 0
-    max_attempts = len(emails_list) * 2  # Arbitrary number, adjust as needed
+    max_attempts = len(emails_list) * 3  # Arbitrary number, adjust as needed
 
     while emails_list and attempts < max_attempts:
-        if len(emails_list) < 2:
-            break
+        # if len(emails_list) < 2:
+        #     break
 
         email1, email2 = random.sample(emails_list, 2)
         new_set = {email1, email2}
