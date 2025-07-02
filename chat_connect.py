@@ -151,9 +151,9 @@ def create_new_combinations(emails_list: List[str], history_list: List[Set[str]]
     max_attempts = len(emails_list) * 3  # Arbitrary number, adjust as needed
 
     while emails_list and attempts < max_attempts:
-        # if len(emails_list) < 2:
-        #     break
-
+        if len(emails_list) < 2:
+            break
+        print("check2")
         email1, email2 = random.sample(emails_list, 2)
         new_set = {email1, email2}
 
@@ -227,7 +227,7 @@ def update_history_and_save_csv(new_combinations: list, history_list: list):
 emails_df, history_df = read_csv_files()  # or use your existing DataFrames
 emails_df, history_df = rename_columns(emails_df, history_df)  # Optional if columns are already renamed
 emails_list, history_list = dataframes_to_lists(emails_df, history_df)
-
+print("check1")
 new_combinations = create_new_combinations(emails_list, history_list)
 
 print(new_combinations)
